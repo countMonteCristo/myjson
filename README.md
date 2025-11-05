@@ -43,7 +43,7 @@ make myjson-complex-test
 
 6. Install library (from **build** folder)
 ```sh
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_FOLDER} ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${INSTALL_FOLDER}" ..
 make -j8 install
 ```
 
