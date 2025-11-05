@@ -1,0 +1,7 @@
+.mypy_cache
+.vscode
+bin/
+build/
+install/
+lib/
+artifacts/
