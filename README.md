@@ -118,7 +118,7 @@ There are unit tests and single complex test needed for checking if library work
 
 Complex test generates random JSON strings using python [json](https://docs.python.org/3/library/json.html) module. Then these random jsons are used as an input for **process_json** utility which reads strings from stdin, parses them into JsonNode and serializes back into strings. After that another python script is used to check whether processed JSON strings represent the same JSON entities as the randomly generated ones.
 
-All complex test code contains in [run.sh](https://github.com/countMonteCristo/myjson/tree/master/tests/complex/run.sh)
+All complex test code contains in [run.sh](https://github.com/countMonteCristo/myjson/tree/main/tests/complex/run.sh)
 
 
 ## Contacts
