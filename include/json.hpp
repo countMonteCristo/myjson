@@ -223,8 +223,11 @@ concept JsonObjetcItem = std::is_same_v<T, std::pair<const std::string, JsonNode
 class JsonObject
 {
 public:
-    using Map = std::unordered_map<std::string, JsonNode>;
+    using Key = std::string;
+    using Map = std::unordered_map<Key, JsonNode>;
     // using Map = std::map<std::string, JsonNode>;
+
+    using CKeyPtr = const Key*;
 
     JsonObject() = default;
     JsonObject(JsonObject&&) = default;

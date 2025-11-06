@@ -15,6 +15,7 @@ struct SerializeOptions
     std::string field_sep = ":";
     std::string element_sep = ",";
     std::string indent = "    ";
+    bool sort_keys = false;
 };
 
 // =============================================================================

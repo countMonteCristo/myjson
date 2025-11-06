@@ -67,24 +67,35 @@ void JsonPrintVisitor::operator()(const JsonNull&)
 
 // =============================================================================
 
-// TODO: Add sort_key flag to output object keys in sorted order
 void JsonPrintVisitor::operator()(const JsonObjectPtr& o)
 {
     stream_ << "{";
     AddNewLineIfPretty();
     IncIndent();
-    bool first = true;
-    for (const auto& [key, node]: *o)
+    bool is_first = true;
+    if (options_.sort_keys)
     {
-        if (!first)
+        std::vector<JsonObject::CKeyPtr> keys;
+        keys.reserve(o->Size());
+        for (auto it = o->begin(); it != o->end(); ++it)
+            keys.push_back(&it->first);
+
+        std::sort(keys.begin(), keys.end(), [](JsonObject::CKeyPtr a, JsonObject::CKeyPtr b) -> bool {
+            return *a < *b;
+        });
+
+        for (const std::string* key: keys)
         {
-            stream_ << options_.element_sep;
-            AddNewLineIfPretty();
+            const auto& node = o->Get(*key);
+            SerializeObjectField(*key, node, is_first);
         }
-        SerializeArgs("\"", key, "\"", options_.field_sep);
-        std::visit(*this, node.Value());
-        first = false;
     }
+    else
+    {
+        for (const auto& [key, node]: *o)
+            SerializeObjectField(key, node, is_first);
+    }
+
     DecIndent();
     AddNewLineIfPretty();
     SerializeArgs("}");
@@ -97,21 +108,35 @@ void JsonPrintVisitor::operator()(const JsonArrayPtr& a)
     stream_ << "[";
     AddNewLineIfPretty();
     IncIndent();
-    bool first = true;
+    bool is_first = true;
     for (const auto& node: *a)
     {
-        if (!first)
+        if (!is_first)
         {
             stream_ << options_.element_sep;
             AddNewLineIfPretty();
         }
         SerializeArgs("");
         std::visit(*this, node.Value());
-        first = false;
+        is_first = false;
     }
     DecIndent();
     AddNewLineIfPretty();
     SerializeArgs("]");
+}
+
+// =============================================================================
+
+void JsonPrintVisitor::SerializeObjectField(const std::string& key, const JsonNode& node, bool& is_first)
+{
+    if (!is_first)
+    {
+        stream_ << options_.element_sep;
+        AddNewLineIfPretty();
+    }
+    SerializeArgs("\"", key, "\"", options_.field_sep);
+    std::visit(*this, node.Value());
+    is_first = false;
 }
 
 // =============================================================================

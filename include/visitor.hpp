@@ -55,6 +55,8 @@ private:
         (stream_ << ... << args);
     }
 
+    void SerializeObjectField(const std::string& key, const JsonNode& node, bool &is_first);
+
 private:
     std::ostream& stream_;
     const SerializeOptions& options_;

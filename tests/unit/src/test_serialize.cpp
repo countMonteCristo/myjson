@@ -22,6 +22,7 @@ class SerializeTest : public CppUnit::TestFixture
     CPPUNIT_TEST(TestNumberDouble);
     CPPUNIT_TEST(TestString);
     CPPUNIT_TEST(TestArray);
+    CPPUNIT_TEST(TestSortedObject);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -33,6 +34,7 @@ protected:
     void TestNumberDouble();
     void TestString();
     void TestArray();
+    void TestSortedObject();
 };
 
 // =============================================================================
@@ -113,6 +115,21 @@ void SerializeTest::TestArray()
 }
 
 // =============================================================================
+
+void SerializeTest::TestSortedObject()
+{
+    std::stringstream ss;
+    mj::JsonNode node{JsonObject{
+        std::make_pair("cherry", 3),
+        std::make_pair("apple", 1),
+        std::make_pair("banana", 2),
+    }};
+    node.PrintToStream(ss, SerializeOptions{.sort_keys=true});
+    CPPUNIT_ASSERT_EQUAL(std::string("{\"apple\":1,\"banana\":2,\"cherry\":3}"), ss.str());
+}
+
+// =============================================================================
+
 
 } // namespace mj::test
 
