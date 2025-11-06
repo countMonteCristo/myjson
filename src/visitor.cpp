@@ -32,6 +32,12 @@ void JsonPrintVisitor::operator()(const JsonString& s)
 
 // =============================================================================
 
+// TODO: check for nan, +-inf
+// Possible variants:
+// * add 'base' and 'strict' modes -the former will silently convert nans and infs
+//   into null while the latter wil throw an exception
+// * use allow_nan flag like in Python json.dumps() function
+// * ...
 void JsonPrintVisitor::operator()(const JsonNumber& n)
 {
     std::stringstream ss;
@@ -61,6 +67,7 @@ void JsonPrintVisitor::operator()(const JsonNull&)
 
 // =============================================================================
 
+// TODO: Add sort_key flag to output object keys in sorted order
 void JsonPrintVisitor::operator()(const JsonObjectPtr& o)
 {
     stream_ << "{";
@@ -74,13 +81,13 @@ void JsonPrintVisitor::operator()(const JsonObjectPtr& o)
             stream_ << options_.element_sep;
             AddNewLineIfPretty();
         }
-        serializeArgs("\"", key, "\"", options_.field_sep);
+        SerializeArgs("\"", key, "\"", options_.field_sep);
         std::visit(*this, node.Value());
         first = false;
     }
     DecIndent();
     AddNewLineIfPretty();
-    serializeArgs("}");
+    SerializeArgs("}");
 }
 
 // =============================================================================
@@ -98,13 +105,13 @@ void JsonPrintVisitor::operator()(const JsonArrayPtr& a)
             stream_ << options_.element_sep;
             AddNewLineIfPretty();
         }
-        serializeArgs("");
+        SerializeArgs("");
         std::visit(*this, node.Value());
         first = false;
     }
     DecIndent();
     AddNewLineIfPretty();
-    serializeArgs("]");
+    SerializeArgs("]");
 }
 
 // =============================================================================

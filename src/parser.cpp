@@ -71,7 +71,7 @@ JsonNode ParseFrom(std::string_view str)
 
     auto [node, tail] = Chop(str);
     if (!tail.empty())
-        throw mj::JsonException("Bad JSON");
+        throw mj::JsonException("Bad JSON: `{}...`", str.substr(0, 64));
 
     return node;
 }
@@ -173,7 +173,7 @@ std::pair<mj::JsonNode, std::string_view> ParseBool(std::string_view str)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view& str)
+std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view str)
 {
     static const std::string null_str("null");
 

@@ -27,7 +27,7 @@ std::pair<mj::JsonNode, std::string_view> ParseBool(std::string_view str);
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view& str);
+std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view str);
 
 // =============================================================================
 

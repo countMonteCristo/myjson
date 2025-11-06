@@ -45,7 +45,7 @@ private:
     }
 
     template<typename... Args>
-    void serializeArgs(Args... args)
+    void SerializeArgs(Args... args)
     {
         if (options_.pretty)
         {
@@ -60,7 +60,6 @@ private:
     const SerializeOptions& options_;
 
     size_t level_ = 0;
-    bool need_indent_  = false;
 };
 
 // =============================================================================
