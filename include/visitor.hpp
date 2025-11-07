@@ -1,8 +1,5 @@
 #pragma once
 
-#include <ostream>
-#include <stdexcept>
-
 #include "json.hpp"
 
 // =============================================================================
@@ -12,56 +9,21 @@ namespace mj
 
 // =============================================================================
 
-class JsonPrintVisitor
+class JsonAbstractVisitor
 {
 public:
-    JsonPrintVisitor(std::ostream& stream, const SerializeOptions& opts = SerializeOptions{});
+    virtual ~JsonAbstractVisitor() {}
 
-    void operator()(const JsonNode& n);
-    void operator()(const JsonString& s);
-    void operator()(const JsonNumber& n);
-    void operator()(const JsonBool& b);
-    void operator()(const JsonNull&);
-    void operator()(const JsonObjectPtr& o);
-    void operator()(const JsonArrayPtr& a);
+    virtual void operator()(const JsonNode&) = 0;
+    virtual void operator()(const JsonString&) = 0;
+    virtual void operator()(const JsonNumber&) = 0;
+    virtual void operator()(const JsonBool&) = 0;
+    virtual void operator()(const JsonNull&) = 0;
+    virtual void operator()(const JsonObjectPtr&) = 0;
+    virtual void operator()(const JsonArrayPtr&) = 0;
 
     template<typename T>
-    void operator()(const T&) { throw std::runtime_error("[JsonPrintVisitor] unhandled json type"); }
-
-private:
-    void AddNewLineIfPretty()
-    {
-        if (options_.pretty)
-            stream_ << '\n';
-    }
-
-    void IncIndent()
-    {
-        level_ += 1;
-    }
-    void DecIndent()
-    {
-        level_ -= 1;
-    }
-
-    template<typename... Args>
-    void SerializeArgs(Args... args)
-    {
-        if (options_.pretty)
-        {
-            for (size_t _ = 0; _ < level_; _++)
-                stream_ << options_.indent;
-        }
-        (stream_ << ... << args);
-    }
-
-    void SerializeObjectField(const std::string& key, const JsonNode& node, bool &is_first);
-
-private:
-    std::ostream& stream_;
-    const SerializeOptions& options_;
-
-    size_t level_ = 0;
+    void operator()(const T&) { throw std::runtime_error("[Visitor] unhandled JSON type"); }
 };
 
 // =============================================================================

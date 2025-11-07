@@ -9,7 +9,7 @@ namespace mj
 
 // =============================================================================
 
-struct SerializeOptions
+struct JsonSerializeOptions
 {
     bool pretty = false;
     std::string field_sep = ":";
@@ -21,3 +21,5 @@ struct SerializeOptions
 // =============================================================================
 
 } // namespace mj
+
+// =============================================================================

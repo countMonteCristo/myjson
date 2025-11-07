@@ -1,9 +1,7 @@
 #include "json.hpp"
 
-#include <cstddef>
-
 #include "exceptions.hpp"
-#include "visitor.hpp"
+#include "serialize_visitor.hpp"
 
 // =============================================================================
 
@@ -12,9 +10,23 @@ namespace mj
 
 // =============================================================================
 
-void JsonNode::PrintToStream(std::ostream& stream, SerializeOptions options) const
+void JsonNode::SerializeToStream(std::ostream& stream, JsonSerializeOptions options) const
 {
-    std::visit(JsonPrintVisitor{stream, options}, value_);
+    std::visit(JsonSerializeVisitor{stream, options}, value_);
+}
+
+// =============================================================================
+
+void JsonArray::Reserve(size_t capacity)
+{
+    nodes_.reserve(capacity);
+}
+
+// =============================================================================
+
+void JsonArray::Resize(size_t new_size)
+{
+    nodes_.resize(new_size);
 }
 
 // =============================================================================
@@ -22,6 +34,30 @@ void JsonNode::PrintToStream(std::ostream& stream, SerializeOptions options) con
 size_t JsonArray::Size() const
 {
     return nodes_.size();
+}
+
+// =============================================================================
+
+JsonNode& JsonArray::At(size_t index)
+{
+    CheckBounds(index);
+    return nodes_.at(index);
+}
+
+// =============================================================================
+
+const JsonNode& JsonArray::At(size_t index) const
+{
+    CheckBounds(index);
+    return nodes_.at(index);
+}
+
+// =============================================================================
+
+void JsonArray::CheckBounds(size_t index) const
+{
+    if (index >= Size())
+        throw JsonException("Out of bounds: index {} exceeds array size {}", index, Size());
 }
 
 // =============================================================================

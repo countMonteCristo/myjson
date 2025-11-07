@@ -20,11 +20,7 @@ public:
         message_ = "[JSON] " + std::vformat(format, std::make_format_args(args...));
     }
 
-    // Override the virtual what() method to return the custom message
-    const char* what() const noexcept override
-    {
-        return message_.c_str();
-    }
+    const char* what() const noexcept override { return message_.c_str(); }
 
 private:
     std::string message_;
@@ -33,3 +29,5 @@ private:
 // =============================================================================
 
 } // namespace mj
+
+// =============================================================================

@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <string>
-#include <map>
 #include <memory>
 #include <unordered_map>
 #include <variant>
@@ -35,32 +34,7 @@ private:
     double n_;
 };
 
-
-template<typename T>
-concept NumberType = std::is_same_v<typename std::remove_reference<T>::type, int64_t> ||
-                     std::is_same_v<typename std::remove_reference<T>::type, double>;
-
-
-class NumberVariant
-{
-public:
-    template<NumberType T>
-    NumberVariant(T x) :
-        n_(x)
-    {}
-
-    bool IsInt() const { return n_.index() == 0; }
-    bool IsDouble() const { return n_.index() == 1; }
-
-    int64_t AsInt() const { return std::get<int64_t>(n_); }
-    int64_t AsDouble() const { return std::get<double>(n_); }
-
-private:
-    std::variant<int64_t, double> n_;
-};
-
 using Number = NumberDouble;
-// using Number = NumberVariant;
 
 // =============================================================================
 
@@ -96,7 +70,9 @@ class JsonNode
 {
 public:
     template<typename T>
-    JsonNode(T&& t) : value_(std::forward<T>(t)) {}
+    JsonNode(T&& t) :
+        value_(std::forward<T>(t))
+    {}
 
     template<JsonMovable T>
     JsonNode(T&& x) :
@@ -109,28 +85,28 @@ public:
     JsonNode(JsonNode&& node) = default;
     JsonNode(const JsonNode&) = delete;
 
-    void PrintToStream(std::ostream& stream = std::cout, SerializeOptions options = SerializeOptions{}) const;
+    void SerializeToStream(std::ostream& stream = std::cout, JsonSerializeOptions options = JsonSerializeOptions{}) const;
 
-    bool IsString() const {return value_.index() == 0;}
-    bool IsNumber() const {return value_.index() == 1;}
-    bool IsBool() const {return value_.index() == 2;}
-    bool IsObject() const {return value_.index() == 3;}
-    bool IsArray() const {return value_.index() == 4;}
-    bool IsNull() const {return value_.index() == 5;}
+    bool IsString() const { return value_.index() == 0; }
+    bool IsNumber() const { return value_.index() == 1; }
+    bool IsBool() const { return value_.index() == 2; }
+    bool IsObject() const { return value_.index() == 3; }
+    bool IsArray() const { return value_.index() == 4; }
+    bool IsNull() const { return value_.index() == 5; }
 
-    JsonString& AsString() {return std::get<JsonString>(value_);}
-    JsonNumber& AsNumber() {return std::get<JsonNumber>(value_);}
-    JsonBool& AsBool() {return std::get<JsonBool>(value_);}
-    JsonObject& AsObject() {return *std::get<JsonObjectPtr>(value_);}
-    JsonArray& AsArray() {return *std::get<JsonArrayPtr>(value_);}
-    JsonNull& AsNull() {return std::get<JsonNull>(value_);}
+    JsonString& AsString() { return std::get<JsonString>(value_); }
+    JsonNumber& AsNumber() { return std::get<JsonNumber>(value_); }
+    JsonBool& AsBool() { return std::get<JsonBool>(value_); }
+    JsonObject& AsObject() { return *std::get<JsonObjectPtr>(value_); }
+    JsonArray& AsArray() { return *std::get<JsonArrayPtr>(value_); }
+    JsonNull& AsNull() { return std::get<JsonNull>(value_); }
 
-    const JsonString& AsString() const {return std::get<JsonString>(value_);}
-    const JsonNumber& AsNumber() const {return std::get<JsonNumber>(value_);}
-    const JsonBool& AsBool() const {return std::get<JsonBool>(value_);}
-    const JsonObject& AsObject() const {return *std::get<JsonObjectPtr>(value_);}
-    const JsonArray& AsArray() const {return *std::get<JsonArrayPtr>(value_);}
-    const JsonNull& AsNull() const {return std::get<JsonNull>(value_);}
+    const JsonString& AsString() const { return std::get<JsonString>(value_); }
+    const JsonNumber& AsNumber() const { return std::get<JsonNumber>(value_); }
+    const JsonBool& AsBool() const { return std::get<JsonBool>(value_); }
+    const JsonObject& AsObject() const { return *std::get<JsonObjectPtr>(value_); }
+    const JsonArray& AsArray() const { return *std::get<JsonArrayPtr>(value_); }
+    const JsonNull& AsNull() const { return std::get<JsonNull>(value_); }
 
     JsonValue& Value() { return value_; }
     const JsonValue& Value() const { return value_; }
@@ -164,37 +140,15 @@ public:
         nodes_.push_back(std::move(std::forward<T>(value)));
     }
 
-    void Reserve(size_t capacity)
-    {
-        nodes_.reserve(capacity);
-    }
-
-    void Resize(size_t new_size)
-    {
-        nodes_.resize(new_size);
-    }
-
+    void Reserve(size_t capacity);
+    void Resize(size_t new_size);
     size_t Size() const;
 
-    JsonNode& At(size_t index)
-    {
-        CheckBounds(index);
-        return nodes_.at(index);
-    }
-    const JsonNode& At(size_t index) const
-    {
-        CheckBounds(index);
-        return nodes_.at(index);
-    }
+    JsonNode& At(size_t index);
+    const JsonNode& At(size_t index) const;
 
-    JsonNode& operator[](size_t index)
-    {
-        return nodes_[index];
-    }
-    const JsonNode& operator[](size_t index) const
-    {
-        return nodes_[index];
-    }
+    JsonNode& operator[](size_t index) { return nodes_[index]; }
+    const JsonNode& operator[](size_t index) const { return nodes_[index]; }
 
     Array::iterator begin() { return nodes_.begin(); }
     Array::iterator end() { return nodes_.end(); }
@@ -203,11 +157,7 @@ public:
     Array::const_iterator end() const { return nodes_.end(); }
 
 private:
-    void CheckBounds(size_t index) const
-    {
-        if (index >= Size())
-            throw JsonException("Out of bounds: index {} exceeds array size {}", index, Size());
-    }
+    void CheckBounds(size_t index) const;
 
 private:
     Array nodes_;
@@ -225,7 +175,7 @@ class JsonObject
 public:
     using Key = std::string;
     using Map = std::unordered_map<Key, JsonNode>;
-    // using Map = std::map<std::string, JsonNode>;
+    // using Map = std::map<Key, JsonNode>;
 
     using CKeyPtr = const Key*;
 
@@ -245,14 +195,8 @@ public:
     JsonNode& Get(const std::string& field);
     const JsonNode& Get(const std::string& field) const;
 
-    JsonNode& operator[](const std::string& field)
-    {
-        return Get(field);
-    }
-    const JsonNode& operator[](const std::string& field) const
-    {
-        return Get(field);
-    }
+    JsonNode& operator[](const std::string& field) { return Get(field); }
+    const JsonNode& operator[](const std::string& field) const { return Get(field); }
 
     template<typename T>
     void AddField(const std::string& name, T value)

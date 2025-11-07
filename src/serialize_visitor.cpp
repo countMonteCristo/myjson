@@ -1,4 +1,4 @@
-#include "visitor.hpp"
+#include "serialize_visitor.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -11,21 +11,21 @@ namespace mj
 
 // =============================================================================
 
-JsonPrintVisitor::JsonPrintVisitor(std::ostream &stream, const SerializeOptions& opts) :
+JsonSerializeVisitor::JsonSerializeVisitor(std::ostream &stream, const JsonSerializeOptions& opts) :
     stream_(stream),
     options_(opts)
 {}
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonNode &n)
+void JsonSerializeVisitor::operator()(const JsonNode &n)
 {
     std::visit(*this, n.Value());
 }
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonString& s)
+void JsonSerializeVisitor::operator()(const JsonString& s)
 {
     stream_ << "\"" << s << "\"";
 }
@@ -38,7 +38,7 @@ void JsonPrintVisitor::operator()(const JsonString& s)
 //   into null while the latter wil throw an exception
 // * use allow_nan flag like in Python json.dumps() function
 // * ...
-void JsonPrintVisitor::operator()(const JsonNumber& n)
+void JsonSerializeVisitor::operator()(const JsonNumber& n)
 {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(12) << n;
@@ -53,21 +53,21 @@ void JsonPrintVisitor::operator()(const JsonNumber& n)
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonBool& b)
+void JsonSerializeVisitor::operator()(const JsonBool& b)
 {
     stream_ << std::boolalpha << b;
 }
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonNull&)
+void JsonSerializeVisitor::operator()(const JsonNull&)
 {
     stream_ << "null";
 }
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonObjectPtr& o)
+void JsonSerializeVisitor::operator()(const JsonObjectPtr& o)
 {
     stream_ << "{";
     AddNewLineIfPretty();
@@ -103,7 +103,7 @@ void JsonPrintVisitor::operator()(const JsonObjectPtr& o)
 
 // =============================================================================
 
-void JsonPrintVisitor::operator()(const JsonArrayPtr& a)
+void JsonSerializeVisitor::operator()(const JsonArrayPtr& a)
 {
     stream_ << "[";
     AddNewLineIfPretty();
@@ -127,7 +127,7 @@ void JsonPrintVisitor::operator()(const JsonArrayPtr& a)
 
 // =============================================================================
 
-void JsonPrintVisitor::SerializeObjectField(const std::string& key, const JsonNode& node, bool& is_first)
+void JsonSerializeVisitor::SerializeObjectField(const std::string& key, const JsonNode& node, bool& is_first)
 {
     if (!is_first)
     {

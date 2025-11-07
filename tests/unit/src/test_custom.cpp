@@ -35,7 +35,7 @@ void CustomTest::TestCheckBigNumbers()
     auto n = mj::ParseFrom(s);
 
     std::stringstream ss;
-    n.PrintToStream(ss);
+    n.SerializeToStream(ss);
     CPPUNIT_ASSERT_EQUAL(s, ss.str());
 }
 // =============================================================================

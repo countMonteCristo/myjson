@@ -35,10 +35,10 @@ std::string_view ChopFirstAndStrip(size_t n, std::string_view s)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> Chop(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ChopNode(std::string_view str)
 {
     if (str.empty())
-        throw mj::JsonException("Chop from empty string");
+        throw mj::JsonException("ChopNode from empty string");
 
     switch (str[0])
     {
@@ -69,7 +69,7 @@ JsonNode ParseFrom(std::string_view str)
 {
     str = StripWhitespaces(str);
 
-    auto [node, tail] = Chop(str);
+    auto [node, tail] = ChopNode(str);
     if (!tail.empty())
         throw mj::JsonException("Bad JSON: `{}...`", str.substr(0, 64));
 
@@ -98,7 +98,7 @@ std::pair<JsonNode, std::string_view> ParseArray(std::string_view str)
                 content = ChopFirstAndStrip(1, content);
             }
 
-            auto [node, tail] = Chop(content);
+            auto [node, tail] = ChopNode(content);
             if (tail == content || tail.empty())
                 return {JsonNode{nullptr}, str};
 
@@ -132,12 +132,12 @@ std::pair<JsonNode, std::string_view> ParseObject(std::string_view str)
                 content = ChopFirstAndStrip(1, content);
             }
 
-            auto [node_field, tail_field] = Chop(content);
+            auto [node_field, tail_field] = ChopNode(content);
             if (tail_field == content || tail_field.empty() || tail_field.front() != ':')
                 return {JsonNode{nullptr}, str};
             content = ChopFirstAndStrip(1, tail_field);
 
-            auto [node_value, tail_value] = Chop(content);
+            auto [node_value, tail_value] = ChopNode(content);
             if (tail_value == content || tail_value.empty())
                 return {JsonNode{nullptr}, str};
 
