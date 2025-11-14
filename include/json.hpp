@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "exceptions.hpp"
-#include "serialize_options.hpp"
+#include "options.hpp"
 
 // =============================================================================
 

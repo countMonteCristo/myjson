@@ -42,7 +42,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SimpleTypesTest);
 
 void SimpleTypesTest::TestBoolFalse()
 {
-    mj::JsonNode node{true};
+    JsonNode node{true};
     CPPUNIT_ASSERT_EQUAL(true, node.AsBool());
 }
 
@@ -50,7 +50,7 @@ void SimpleTypesTest::TestBoolFalse()
 
 void SimpleTypesTest::TestBoolTrue()
 {
-    mj::JsonNode node{false};
+    JsonNode node{false};
     CPPUNIT_ASSERT_EQUAL(false, node.AsBool());
 }
 
@@ -58,7 +58,7 @@ void SimpleTypesTest::TestBoolTrue()
 
 void SimpleTypesTest::TestNull()
 {
-    mj::JsonNode node{nullptr};
+    JsonNode node{nullptr};
     CPPUNIT_ASSERT_EQUAL(nullptr, node.AsNull());
 }
 
@@ -66,7 +66,7 @@ void SimpleTypesTest::TestNull()
 
 void SimpleTypesTest::TestNumberInteger()
 {
-    mj::JsonNode node{123};
+    JsonNode node{123};
     CPPUNIT_ASSERT_EQUAL(123, node.AsNumber().To<int>());
 }
 
@@ -74,7 +74,7 @@ void SimpleTypesTest::TestNumberInteger()
 
 void SimpleTypesTest::TestNumberDouble()
 {
-    mj::JsonNode node{123.456};
+    JsonNode node{123.456};
     CPPUNIT_ASSERT(AlmostEqual(123.456, node.AsNumber()));
 }
 
@@ -82,7 +82,7 @@ void SimpleTypesTest::TestNumberDouble()
 
 void SimpleTypesTest::TestString()
 {
-    mj::JsonNode node{"hello, json"};
+    JsonNode node{"hello, json"};
     CPPUNIT_ASSERT_EQUAL(std::string("hello, json"), node.AsString());
 }
 

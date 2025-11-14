@@ -32,7 +32,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CustomTest);
 void CustomTest::TestCheckBigNumbers()
 {
     std::string s = "{\"x\":199059818}";
-    auto n = mj::ParseFrom(s);
+    auto n = ParseFrom(s);
 
     std::stringstream ss;
     n.SerializeToStream(ss);

@@ -1,6 +1,7 @@
 #include "parser.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 // =============================================================================
 
@@ -35,19 +36,19 @@ std::string_view ChopFirstAndStrip(size_t n, std::string_view s)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ChopNode(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ChopNode(std::string_view str, const mj::JsonDeserializeOptions& options)
 {
     if (str.empty())
         throw mj::JsonException("ChopNode from empty string");
 
     switch (str[0])
     {
-    case '[': return mj::ParseArray(str);
-    case '{': return mj::ParseObject(str);
-    case '"': return mj::ParseString(str);
-    case 't': case 'f': return mj::ParseBool(str);
-    case 'n': return mj::ParseNull(str);
-    default: return mj::ParseNumber(str);
+    case '[': return mj::ParseArray(str, options);
+    case '{': return mj::ParseObject(str, options);
+    case '"': return mj::ParseString(str, options);
+    case 't': case 'f': return mj::ParseBool(str, options);
+    case 'n': return mj::ParseNull(str, options);
+    default: return mj::ParseNumber(str, options);
     }
 }
 
@@ -65,11 +66,11 @@ namespace mj
 
 // =============================================================================
 
-JsonNode ParseFrom(std::string_view str)
+JsonNode ParseFrom(std::string_view str, const JsonDeserializeOptions& options)
 {
     str = StripWhitespaces(str);
 
-    auto [node, tail] = ChopNode(str);
+    auto [node, tail] = ChopNode(str, options);
     if (!tail.empty())
         throw mj::JsonException("Bad JSON: `{}...`", str.substr(0, 64));
 
@@ -78,7 +79,7 @@ JsonNode ParseFrom(std::string_view str)
 
 // =============================================================================
 
-std::pair<JsonNode, std::string_view> ParseArray(std::string_view str)
+std::pair<JsonNode, std::string_view> ParseArray(std::string_view str, const JsonDeserializeOptions& options)
 {
     if (str.size() > 1)
     {
@@ -98,7 +99,7 @@ std::pair<JsonNode, std::string_view> ParseArray(std::string_view str)
                 content = ChopFirstAndStrip(1, content);
             }
 
-            auto [node, tail] = ChopNode(content);
+            auto [node, tail] = ChopNode(content, options);
             if (tail == content || tail.empty())
                 return {JsonNode{nullptr}, str};
 
@@ -112,7 +113,7 @@ std::pair<JsonNode, std::string_view> ParseArray(std::string_view str)
 
 // =============================================================================
 
-std::pair<JsonNode, std::string_view> ParseObject(std::string_view str)
+std::pair<JsonNode, std::string_view> ParseObject(std::string_view str, const JsonDeserializeOptions& options)
 {
     if (str.size() > 1)
     {
@@ -132,12 +133,12 @@ std::pair<JsonNode, std::string_view> ParseObject(std::string_view str)
                 content = ChopFirstAndStrip(1, content);
             }
 
-            auto [node_field, tail_field] = ChopNode(content);
+            auto [node_field, tail_field] = ChopNode(content, options);
             if (tail_field == content || tail_field.empty() || tail_field.front() != ':')
                 return {JsonNode{nullptr}, str};
             content = ChopFirstAndStrip(1, tail_field);
 
-            auto [node_value, tail_value] = ChopNode(content);
+            auto [node_value, tail_value] = ChopNode(content, options);
             if (tail_value == content || tail_value.empty())
                 return {JsonNode{nullptr}, str};
 
@@ -151,7 +152,7 @@ std::pair<JsonNode, std::string_view> ParseObject(std::string_view str)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseBool(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ParseBool(std::string_view str, const JsonDeserializeOptions&)
 {
     static const std::string true_str("true");
     static const std::string false_str("false");
@@ -173,7 +174,7 @@ std::pair<mj::JsonNode, std::string_view> ParseBool(std::string_view str)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view str, const JsonDeserializeOptions&)
 {
     static const std::string null_str("null");
 
@@ -186,7 +187,7 @@ std::pair<mj::JsonNode, std::string_view> ParseNull(std::string_view str)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseString(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ParseString(std::string_view str, const JsonDeserializeOptions&)
 {
     bool found = false;
     size_t close_quote_idx;
@@ -215,12 +216,14 @@ std::pair<mj::JsonNode, std::string_view> ParseString(std::string_view str)
 
 // =============================================================================
 
-std::pair<mj::JsonNode, std::string_view> ParseNumber(std::string_view str)
+std::pair<mj::JsonNode, std::string_view> ParseNumber(std::string_view str, const JsonDeserializeOptions& options)
 {
     size_t tail_start_idx;
     try
     {
         double number = std::stod(str.begin(), &tail_start_idx);
+        if (options.strict && !std::isfinite(number))
+            throw JsonException("non-finite numbers (nan, +-inf) are not allowed in strict mode");
         return {mj::JsonNode(number), ChopFirstAndStrip(tail_start_idx, str)};
     }
     catch(const std::exception& e)

@@ -44,7 +44,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CompositeTypesTest);
 
 void CompositeTypesTest::TestArray()
 {
-    mj::JsonArray array{
+    JsonArray array{
         1,
         "23",
         nullptr,
@@ -64,13 +64,13 @@ void CompositeTypesTest::TestArray()
     CPPUNIT_ASSERT_EQUAL(nullptr, array.At(idx++).AsNull());
     CPPUNIT_ASSERT_EQUAL(true, array.At(idx++).AsBool());
 
-    const mj::JsonArray& child_array = array.At(idx++).AsArray();
+    const JsonArray& child_array = array.At(idx++).AsArray();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), child_array.Size());
     CPPUNIT_ASSERT_EQUAL(false, child_array.At(0).AsBool());
     CPPUNIT_ASSERT_EQUAL(nullptr, child_array.At(1).AsNull());
     CPPUNIT_ASSERT_EQUAL(std::string("json"), child_array.At(2).AsString());
 
-    const mj::JsonObject& child_object = array.At(idx++).AsObject();
+    const JsonObject& child_object = array.At(idx++).AsObject();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), child_object.Size());
     CPPUNIT_ASSERT_EQUAL(4, child_object.Get("k0").AsNumber().To<int>());
     CPPUNIT_ASSERT_EQUAL(false, child_object.Get("k1").AsBool());
@@ -85,12 +85,12 @@ void CompositeTypesTest::TestArray()
 
 void CompositeTypesTest::TestObject()
 {
-    mj::JsonObject object{
+    JsonObject object{
         std::make_pair("k01", 1),
         std::make_pair("k02", false),
         std::make_pair("k03", nullptr),
-        std::make_pair("k04", mj::JsonArray{1, nullptr, "23", true}),
-        std::make_pair("k05", mj::JsonObject{
+        std::make_pair("k04", JsonArray{1, nullptr, "23", true}),
+        std::make_pair("k05", JsonObject{
             std::make_pair("k06", true),
             std::make_pair("k07", 123),
             std::make_pair("k08", "456"),
@@ -122,7 +122,7 @@ void CompositeTypesTest::TestObject()
 
 void CompositeTypesTest::TestConstructArray()
 {
-    mj::JsonArray array;
+    JsonArray array;
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), array.Size());
 
     const size_t count = 6;
@@ -130,9 +130,9 @@ void CompositeTypesTest::TestConstructArray()
     array.PushBack(2.71828);
     array.PushBack(true);
     array.PushBack(nullptr);
-    array.PushBack(mj::JsonArray{1, 2, 3.14});
+    array.PushBack(JsonArray{1, 2, 3.14});
     array.PushBack("hello");
-    array.PushBack(mj::JsonObject{
+    array.PushBack(JsonObject{
         std::make_pair("k06", true),
         std::make_pair("k07", 123),
         std::make_pair("k08", "456"),
@@ -144,7 +144,7 @@ void CompositeTypesTest::TestConstructArray()
     CPPUNIT_ASSERT_EQUAL(true, array.At(1).AsBool());
     CPPUNIT_ASSERT_EQUAL(nullptr, array.At(2).AsNull());
 
-    const mj::JsonArray& child_array = array.At(3).AsArray();
+    const JsonArray& child_array = array.At(3).AsArray();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), child_array.Size());
     CPPUNIT_ASSERT_EQUAL(1, child_array.At(0).AsNumber().To<int>());
     CPPUNIT_ASSERT_EQUAL(2, child_array.At(1).AsNumber().To<int>());
@@ -168,7 +168,7 @@ void CompositeTypesTest::TestConstructArray()
 
 void CompositeTypesTest::TestConstructObject()
 {
-    mj::JsonObject object;
+    JsonObject object;
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), object.Size());
 
     object.AddField("k00", true);
@@ -197,12 +197,12 @@ void CompositeTypesTest::TestConstructObject()
     CPPUNIT_ASSERT(AlmostEqual(5.7, child_array.At(3).AsNumber()));
     CPPUNIT_ASSERT_EQUAL(nullptr, child_array.At(4).AsNull());
 
-    const mj::JsonObject& child_object = object.Get("k05").AsObject();
+    const JsonObject& child_object = object.Get("k05").AsObject();
     CPPUNIT_ASSERT_EQUAL(123, child_object.Get("k06").AsNumber().To<int>());
     CPPUNIT_ASSERT_EQUAL(std::string("string value"), child_object.Get("k07").AsString());
     CPPUNIT_ASSERT_EQUAL(nullptr, child_object.Get("k08").AsNull());
 
-    CPPUNIT_ASSERT_THROW(object.Get("unused_key"), mj::JsonException);
+    CPPUNIT_ASSERT_THROW(object.Get("unused_key"), JsonException);
 }
 
 // =============================================================================

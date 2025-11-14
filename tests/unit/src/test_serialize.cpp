@@ -43,10 +43,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SerializeTest);
 
 // =============================================================================
 
+// TODO: remove  in test functions
 void SerializeTest::TestBoolFalse()
 {
     std::stringstream ss;
-    mj::JsonNode node{true};
+    JsonNode node{true};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("true"), ss.str());
 }
@@ -56,7 +57,7 @@ void SerializeTest::TestBoolFalse()
 void SerializeTest::TestBoolTrue()
 {
     std::stringstream ss;
-    mj::JsonNode node{false};
+    JsonNode node{false};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("false"), ss.str());
 }
@@ -66,7 +67,7 @@ void SerializeTest::TestBoolTrue()
 void SerializeTest::TestNull()
 {
     std::stringstream ss;
-    mj::JsonNode node{nullptr};
+    JsonNode node{nullptr};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("null"), ss.str());
 }
@@ -76,7 +77,7 @@ void SerializeTest::TestNull()
 void SerializeTest::TestNumberInteger()
 {
     std::stringstream ss;
-    mj::JsonNode node{123};
+    JsonNode node{123};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("123"), ss.str());
 }
@@ -86,7 +87,7 @@ void SerializeTest::TestNumberInteger()
 void SerializeTest::TestNumberDouble()
 {
     std::stringstream ss;
-    mj::JsonNode node{123.456};
+    JsonNode node{123.456};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("123.456"), ss.str());
 }
@@ -96,7 +97,7 @@ void SerializeTest::TestNumberDouble()
 void SerializeTest::TestString()
 {
     std::stringstream ss;
-    mj::JsonNode node{"hello, json"};
+    JsonNode node{"hello, json"};
     node.SerializeToStream(ss, JsonSerializeOptions{});
     CPPUNIT_ASSERT_EQUAL(std::string("\"hello, json\""), ss.str());
 }
@@ -106,7 +107,7 @@ void SerializeTest::TestString()
 void SerializeTest::TestArray()
 {
     std::stringstream ss;
-    mj::JsonNode node{JsonArray{
+    JsonNode node{JsonArray{
         1, "2345", 3.14, true, false, nullptr,
         JsonArray{"hello", "world"},
     }};
@@ -119,7 +120,7 @@ void SerializeTest::TestArray()
 void SerializeTest::TestSortedObject()
 {
     std::stringstream ss;
-    mj::JsonNode node{JsonObject{
+    JsonNode node{JsonObject{
         std::make_pair("cherry", 3),
         std::make_pair("apple", 1),
         std::make_pair("banana", 2),
