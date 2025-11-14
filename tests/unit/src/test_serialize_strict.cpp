@@ -11,9 +11,9 @@ namespace mj::test
 
 // =============================================================================
 
-class SerializeTest : public CppUnit::TestFixture
+class SerializeStrictTest : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE(SerializeTest);
+    CPPUNIT_TEST_SUITE(SerializeStrictTest);
 
     CPPUNIT_TEST(TestBoolFalse);
     CPPUNIT_TEST(TestBoolTrue);
@@ -27,6 +27,9 @@ class SerializeTest : public CppUnit::TestFixture
 
     CPPUNIT_TEST_SUITE_END();
 
+public:
+    void setUp() override { options.strict = true; }
+
 protected:
     void TestBoolFalse();
     void TestBoolTrue();
@@ -37,122 +40,131 @@ protected:
     void TestString();
     void TestArray();
     void TestSortedObject();
+
+private:
+    JsonSerializeOptions options;
 };
 
 // =============================================================================
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SerializeTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(SerializeStrictTest);
 
 // =============================================================================
 
-void SerializeTest::TestBoolFalse()
+void SerializeStrictTest::TestBoolFalse()
 {
     std::stringstream ss;
     JsonNode node{true};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("true"), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestBoolTrue()
+void SerializeStrictTest::TestBoolTrue()
 {
     std::stringstream ss;
     JsonNode node{false};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("false"), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestNull()
+void SerializeStrictTest::TestNull()
 {
     std::stringstream ss;
     JsonNode node{nullptr};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("null"), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestNumberInteger()
+void SerializeStrictTest::TestNumberInteger()
 {
     std::stringstream ss;
     JsonNode node{123};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("123"), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestNumberDouble()
+void SerializeStrictTest::TestNumberDouble()
 {
     std::stringstream ss;
     JsonNode node{123.456};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("123.456"), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestNumberInfinite()
+void SerializeStrictTest::TestNumberInfinite()
 {
-    std::stringstream ss1;
-    JsonNode node1{std::numeric_limits<double>::quiet_NaN()};
-    node1.SerializeToStream(ss1, JsonSerializeOptions{});
-    CPPUNIT_ASSERT_EQUAL(std::string("NaN"), ss1.str());
+    std::stringstream ss;
+    JsonNode node1{std::numeric_limits<double>::infinity()};
+    CPPUNIT_ASSERT_THROW(node1.SerializeToStream(ss, options), JsonException);
 
-    std::stringstream ss2;
-    JsonNode node2{std::numeric_limits<double>::infinity()};
-    node2.SerializeToStream(ss2, JsonSerializeOptions{});
-    CPPUNIT_ASSERT_EQUAL(std::string("Infinity"), ss2.str());
+    JsonNode node2{-std::numeric_limits<double>::infinity()};
+    CPPUNIT_ASSERT_THROW(node2.SerializeToStream(ss, options), JsonException);
 
-    std::stringstream ss3;
-    JsonNode node3{-std::numeric_limits<double>::infinity()};
-    node3.SerializeToStream(ss3, JsonSerializeOptions{});
-    CPPUNIT_ASSERT_EQUAL(std::string("-Infinity"), ss3.str());
+    JsonNode node3{std::numeric_limits<double>::quiet_NaN()};
+    CPPUNIT_ASSERT_THROW(node3.SerializeToStream(ss, options), JsonException);
 }
 
 // =============================================================================
 
-void SerializeTest::TestString()
+void SerializeStrictTest::TestString()
 {
     std::stringstream ss;
     JsonNode node{"hello, json"};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
+    node.SerializeToStream(ss, options);
     CPPUNIT_ASSERT_EQUAL(std::string("\"hello, json\""), ss.str());
 }
 
 // =============================================================================
 
-void SerializeTest::TestArray()
+void SerializeStrictTest::TestArray()
 {
     std::stringstream ss;
     JsonNode node{JsonArray{
+        1, "2345", 3.14, true, false, nullptr,
+        JsonArray{"hello", "world"},
+    }};
+    node.SerializeToStream(ss, options);
+    CPPUNIT_ASSERT_EQUAL(std::string("[1,\"2345\",3.14,true,false,null,[\"hello\",\"world\"]]"), ss.str());
+
+    JsonNode bad_node{JsonArray{
         1, "2345", 3.14, true, false, nullptr,
         std::numeric_limits<double>::quiet_NaN(),
         std::numeric_limits<double>::infinity(),
         -std::numeric_limits<double>::infinity(),
         JsonArray{"hello", "world"},
     }};
-    node.SerializeToStream(ss, JsonSerializeOptions{});
-    CPPUNIT_ASSERT_EQUAL(
-        std::string("[1,\"2345\",3.14,true,false,null,NaN,Infinity,-Infinity,[\"hello\",\"world\"]]"),
-        ss.str());
+    CPPUNIT_ASSERT_THROW(bad_node.SerializeToStream(ss, options), JsonException);
 }
 
 // =============================================================================
 
-void SerializeTest::TestSortedObject()
+void SerializeStrictTest::TestSortedObject()
 {
     std::stringstream ss;
     JsonNode node{JsonObject{
-        std::make_pair("cherry", std::numeric_limits<double>::quiet_NaN()),
+        std::make_pair("cherry", 3),
         std::make_pair("apple", 1),
         std::make_pair("banana", 2),
     }};
     node.SerializeToStream(ss, JsonSerializeOptions{.sort_keys=true});
-    CPPUNIT_ASSERT_EQUAL(std::string("{\"apple\":1,\"banana\":2,\"cherry\":NaN}"), ss.str());
+    CPPUNIT_ASSERT_EQUAL(std::string("{\"apple\":1,\"banana\":2,\"cherry\":3}"), ss.str());
+
+    JsonNode bad_node{JsonObject{
+        std::make_pair("cherry", 3),
+        std::make_pair("apple", std::numeric_limits<double>::infinity()),
+        std::make_pair("banana", 2),
+    }};
+    CPPUNIT_ASSERT_THROW(bad_node.SerializeToStream(ss, options), JsonException);
 }
 
 // =============================================================================

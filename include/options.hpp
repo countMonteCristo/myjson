@@ -16,6 +16,7 @@ struct JsonSerializeOptions
     std::string element_sep = ",";
     std::string indent = "    ";
     bool sort_keys = false;
+    bool strict = false;
 };
 
 // =============================================================================

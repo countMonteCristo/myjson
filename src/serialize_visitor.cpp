@@ -1,6 +1,7 @@
 #include "serialize_visitor.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <variant>
 
@@ -32,14 +33,23 @@ void JsonSerializeVisitor::operator()(const JsonString& s)
 
 // =============================================================================
 
-// TODO: check for nan, +-inf
-// Possible variants:
-// * add 'base' and 'strict' modes -the former will silently convert nans and infs
-//   into null while the latter wil throw an exception
-// * use allow_nan flag like in Python json.dumps() function
-// * ...
 void JsonSerializeVisitor::operator()(const JsonNumber& n)
 {
+    if (options_.strict && !std::isfinite(n))
+        throw JsonException("non-finite numbers (nan, +-inf) are not allowed in strict mode");
+
+    if (std::isnan(n))
+    {
+        stream_ << "NaN";
+        return;
+    }
+    if (std::isinf(n))
+    {
+        if (n < 0.0) stream_ << "-";
+        stream_ << "Infinity";
+        return;
+    }
+
     std::stringstream ss;
     ss << std::fixed << std::setprecision(12) << n;
     std::string result = ss.str();
