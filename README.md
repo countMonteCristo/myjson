@@ -51,6 +51,7 @@ make -j8 install
 
 * library provides classes and functions for [de]serializing JSON objects
 * ability to prettify and customize JSON serialization
+* strict mode for parsing and serializing JSON entities (NaN, Infinity and -Infinity are not allowed in strict mode)
 
 ### Example
 ```cxx
